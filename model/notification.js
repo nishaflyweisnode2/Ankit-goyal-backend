@@ -3,7 +3,7 @@ const Schema = Mongoose.Schema;
 var notificationModel = new Schema({
         userId: {
                 type: Mongoose.Schema.Types.ObjectId,
-                ref: "user"
+                ref: "User"
         },
         title: {
                 type: String

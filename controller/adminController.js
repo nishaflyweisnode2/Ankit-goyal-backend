@@ -4,15 +4,20 @@ const jwt = require("jsonwebtoken");
 const howToPlay = require("../model/howPlay");
 const staticContent = require('../model/staticContent');
 const pointSystem = require('../model/pointSystem');
+const authConfig = require("../configs/auth.config");
+const FAQ = require('../model/faqModel');
+const CallUs = require('../model/contacusModel');
+
+
 
 exports.registration = async (req, res) => {
         const { mobileNumber, email } = req.body;
         try {
                 req.body.email = email.split(" ").join("").toLowerCase();
-                let user = await User.findOne({ $and: [{ $or: [{ email: req.body.email }, { mobileNumber: mobileNumber }] }], userType: "ADMIN" });
+                let user = await User.findOne({ $and: [{ $or: [{ email: req.body.email }, { mobileNumber: mobileNumber }] }], userType: "Admin" });
                 if (!user) {
                         req.body.password = bcrypt.hashSync(req.body.password, 8);
-                        req.body.userType = "ADMIN";
+                        req.body.userType = "Admin";
                         req.body.accountVerification = true;
                         const userCreate = await User.create(req.body);
                         return res.status(200).send({ message: "registered successfully ", data: userCreate, });
@@ -27,7 +32,7 @@ exports.registration = async (req, res) => {
 exports.signin = async (req, res) => {
         try {
                 const { email, password } = req.body;
-                const user = await User.findOne({ email: email, userType: "ADMIN" });
+                const user = await User.findOne({ email: email, userType: "Admin" });
                 if (!user) {
                         return res
                                 .status(404)
@@ -37,7 +42,9 @@ exports.signin = async (req, res) => {
                 if (!isValidPassword) {
                         return res.status(401).send({ message: "Wrong password" });
                 }
-                const accessToken = await jwt.sign({ id: user._id }, 'DMandir', { expiresIn: '365d', });
+                const accessToken = await jwt.sign({ id: user._id }, authConfig.secret, {
+                        expiresIn: authConfig.accessTokenTime,
+                });
                 let obj = {
                         fullName: user.fullName,
                         firstName: user.fullName,
@@ -54,7 +61,7 @@ exports.signin = async (req, res) => {
 };
 exports.userList = async (req, res) => {
         try {
-                const findContest = await User.find({ userType: "USER" });
+                const findContest = await User.find({ userType: "User" });
                 if (findContest.length == 0) {
                         return res.status(404).json({ status: 404, message: 'User not found.', });
                 }
@@ -438,8 +445,151 @@ exports.deletePointSystem = async (req, res) => {
                 return res.status(501).send({ status: 501, message: "server error.", data: {}, });
         }
 };
+exports.createFAQ = async (req, res) => {
+        try {
+                const { question, answer } = req.body;
+                const newFAQ = await FAQ.create({ question, answer });
+                return res.status(201).json({ status: 201, data: newFAQ });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.getAllFAQs = async (req, res) => {
+        try {
+                const faqs = await FAQ.find();
+                return res.status(200).json({ status: 200, data: faqs });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.getFAQById = async (req, res) => {
+        try {
+                const faqId = req.params.id;
+                const faq = await FAQ.findById(faqId);
 
+                if (!faq) {
+                        return res.status(404).json({ status: 404, message: 'FAQ not found' });
+                }
 
+                return res.status(200).json({ status: 200, data: faq });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.updateFAQById = async (req, res) => {
+        try {
+                const faqId = req.params.id;
+                const updatedFAQ = await FAQ.findByIdAndUpdate(faqId, { $set: req.body }, { new: true });
+
+                if (!updatedFAQ) {
+                        return res.status(404).json({ status: 404, message: 'FAQ not found' });
+                }
+
+                return res.status(200).json({ status: 200, data: updatedFAQ });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.deleteFAQById = async (req, res) => {
+        try {
+                const faqId = req.params.id;
+                const deletedFAQ = await FAQ.findByIdAndDelete(faqId);
+
+                if (!deletedFAQ) {
+                        return res.status(404).json({ status: 404, message: 'FAQ not found' });
+                }
+
+                return res.status(200).json({ status: 200, data: deletedFAQ });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.createCallUs = async (req, res) => {
+        try {
+                const { mobileNumber, email } = req.body;
+                const userId = req.user._id;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const newContactUs = await CallUs.create({
+                        mobileNumber,
+                        email,
+                });
+
+                return res.status(201).json({ status: 201, data: newContactUs });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.getAllCallUs = async (req, res) => {
+        try {
+                const contactUsEntries = await CallUs.find();
+                return res.status(200).json({ status: 200, data: contactUsEntries });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.getCallUsById = async (req, res) => {
+        try {
+                const contactUsId = req.params.id;
+                const contactUsEntry = await CallUs.findById(contactUsId);
+
+                if (!contactUsEntry) {
+                        return res.status(404).json({ status: 404, message: 'Contact us entry not found' });
+                }
+
+                return res.status(200).json({ status: 200, data: contactUsEntry });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.updateCallUs = async (req, res) => {
+        try {
+                const contactUsId = req.params.id;
+
+                const updatedContactUsEntry = await CallUs.findByIdAndUpdate(
+                        contactUsId,
+                        { $set: req.body },
+                        { new: true }
+                );
+
+                if (!updatedContactUsEntry) {
+                        return res.status(404).json({ status: 404, message: 'Contact Us entry not found' });
+                }
+
+                return res.status(200).json({ status: 200, data: updatedContactUsEntry });
+
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
+exports.deleteCallUs = async (req, res) => {
+        try {
+                const contactUsId = req.params.id;
+                const deletedContactUsEntry = await CallUs.findByIdAndDelete(contactUsId);
+
+                if (!deletedContactUsEntry) {
+                        return res.status(404).json({ status: 404, message: 'Contact us entry not found' });
+                }
+
+                return res.status(200).json({ status: 200, message: 'Contact us entry deleted successfully' });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).json({ status: 500, error: error.message });
+        }
+};
 const reffralCode = async () => {
         var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ";
         let OTP = '';

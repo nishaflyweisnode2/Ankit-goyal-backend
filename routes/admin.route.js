@@ -29,4 +29,16 @@ module.exports = (app) => {
         app.delete('/api/v1/admin/PointSystem/:id', [authJwt.verifyToken], auth.deletePointSystem);
         app.get('/api/v1/admin/getPointSystem', auth.getPointSystem);
         app.get('/api/v1/admin/PointSystem/:id', auth.getPointSystemById);
+        app.post('/api/v1/admin/faqs/create', [authJwt.verifyToken], auth.createFAQ);
+        app.get('/api/v1/admin/faqs', auth.getAllFAQs);
+        app.get('/api/v1/admin/faqs/:id', auth.getFAQById);
+        app.put('/api/v1/admin/faqs/:id', [authJwt.verifyToken], auth.updateFAQById);
+        app.delete('/api/v1/admin/faqs/:id', [authJwt.verifyToken], auth.deleteFAQById);
+        app.post('/api/v1/admin/call/us', [authJwt.verifyToken], auth.createCallUs);
+        app.get('/api/v1/admin/call-us', auth.getAllCallUs);
+        app.get('/api/v1/admin/call-us/:id', auth.getCallUsById);
+        app.put('/api/v1/admin/call-us/:id', [authJwt.verifyToken], auth.updateCallUs);
+        app.delete('/api/v1/admin/call-us/:id', [authJwt.verifyToken], auth.deleteCallUs);
+
+
 }
