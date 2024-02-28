@@ -7,6 +7,12 @@ const pointSystem = require('../model/pointSystem');
 const authConfig = require("../configs/auth.config");
 const FAQ = require('../model/faqModel');
 const CallUs = require('../model/contacusModel');
+const FantacySelfHelp = require('../model/fantacySelfHelpModel');
+const ResponsibleGame = require('../model/responsibleGamingModel');
+const OfferAndProgram = require('../model/offer&ProgramModel');
+
+
+
 
 
 
@@ -590,6 +596,246 @@ exports.deleteCallUs = async (req, res) => {
                 return res.status(500).json({ status: 500, error: error.message });
         }
 };
+exports.createFantacySelfHelp = async (req, res) => {
+        try {
+                const data = await FantacySelfHelp.findOne({});
+                if (data) {
+                        let title = req.body.title || data.title;
+                        const data1 = await FantacySelfHelp.findOneAndUpdate({ id: data._id }, { title: title }, { new: true, });
+                        return res.status(200).json({ status: 200, message: "update successfully.", data: data1 });
+                } else {
+                        if (!req.body.title) {
+                                return res.status(400).send("please specify title");
+                        }
+                        const result = await FantacySelfHelp.create({ title: req.body.title });
+                        return res.status(200).json({ status: 200, message: "Data create successfully.", data: result });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getFantacySelfHelp = async (req, res) => {
+        try {
+                const data = await FantacySelfHelp.find();
+                if (!data || data.length === 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: data });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getFantacySelfHelpById = async (req, res) => {
+        try {
+                const data = await FantacySelfHelp.findById(req.params.id);
+                if (!data || data.length === 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: data });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deleteFantacySelfHelp = async (req, res) => {
+        try {
+                const data = await FantacySelfHelp.findByIdAndDelete(req.params.id);
+                if (!data) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Deleted Successfully", });
+        } catch (err) {
+                console.log(err.message);
+                return res.status(500).send({ msg: "internal server error", error: err.message });
+        }
+};
+exports.createResponsibleGame = async (req, res) => {
+        try {
+                const data = await ResponsibleGame.findOne({});
+                if (data) {
+                        let title = req.body.title || data.title;
+                        const data1 = await ResponsibleGame.findOneAndUpdate({ id: data._id }, { title: title }, { new: true, });
+                        return res.status(200).json({ status: 200, message: "update successfully.", data: data1 });
+                } else {
+                        if (!req.body.title) {
+                                return res.status(400).send("please specify title");
+                        }
+                        const result = await ResponsibleGame.create({ title: req.body.title });
+                        return res.status(200).json({ status: 200, message: "Data create successfully.", data: result });
+                }
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getResponsibleGame = async (req, res) => {
+        try {
+                const data = await ResponsibleGame.find();
+                if (!data || data.length === 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: data });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.getResponsibleGameById = async (req, res) => {
+        try {
+                const data = await ResponsibleGame.findById(req.params.id);
+                if (!data || data.length === 0) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Data found successfully.", data: data });
+        } catch (error) {
+                console.log(error);
+                return res.status(501).send({ status: 501, message: "server error.", data: {}, });
+        }
+};
+exports.deleteResponsibleGame = async (req, res) => {
+        try {
+                const data = await ResponsibleGame.findByIdAndDelete(req.params.id);
+                if (!data) {
+                        return res.status(404).json({ status: 404, message: "No data found", data: {} });
+                }
+                return res.status(200).json({ status: 200, message: "Deleted Successfully", });
+        } catch (err) {
+                console.log(err.message);
+                return res.status(500).send({ msg: "internal server error", error: err.message });
+        }
+};
+exports.createOfferAndProgram = async (req, res) => {
+        try {
+                const { name, status } = req.body;
+
+                if (!req.file) {
+                        return res.status(400).json({ status: 400, error: "Image file is required" });
+                }
+
+                const existingCity = await OfferAndProgram.findOne({ name });
+
+                if (existingCity) {
+                        return res.status(400).json({
+                                status: 400,
+                                message: 'OfferAndProgram with the same name already exists',
+                        });
+                }
+
+                const newCity = new City({ name, image: req.file.path, status });
+
+                const savedCity = await newCity.save();
+
+                res.status(201).json({
+                        status: 201,
+                        message: 'City created successfully',
+                        data: savedCity,
+                });
+        } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Server error' });
+        }
+};
+exports.getAllOfferAndProgram = async (req, res) => {
+        try {
+                const cities = await OfferAndProgram.find();
+
+                res.status(200).json({
+                        status: 200,
+                        message: 'OfferAndProgram retrieved successfully',
+                        data: cities,
+                });
+        } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Server error' });
+        }
+};
+exports.getOfferAndProgramById = async (req, res) => {
+        try {
+                const city = await OfferAndProgram.findById(req.params.id);
+
+                if (!city) {
+                        return res.status(404).json({ message: 'OfferAndProgram not found' });
+                }
+
+                res.status(200).json({
+                        status: 200,
+                        message: 'OfferAndProgram retrieved successfully',
+                        data: city,
+                });
+        } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Server error' });
+        }
+};
+exports.updateOfferAndProgramById = async (req, res) => {
+        try {
+                const { name, status } = req.body;
+                const cityId = req.params.id;
+
+                const existingCity = await OfferAndProgram.findById(cityId);
+
+                if (!existingCity) {
+                        return res.status(404).json({
+                                status: 404,
+                                message: 'OfferAndProgram not found',
+                        });
+                }
+
+                if (name && name !== existingCity.name) {
+                        const duplicateCity = await OfferAndProgram.findOne({ name });
+
+                        if (duplicateCity) {
+                                return res.status(400).json({
+                                        status: 400,
+                                        message: 'OfferAndProgram with the updated name already exists',
+                                });
+                        }
+
+                        existingCity.name = name;
+                }
+
+                if (req.file) {
+                        existingCity.image = req.file.path;
+                }
+
+                if (req.body.status !== undefined) {
+                        existingCity.status = status;
+                }
+
+                const updatedCity = await existingCity.save();
+
+                res.status(200).json({
+                        status: 200,
+                        message: 'OfferAndProgram updated successfully',
+                        data: updatedCity,
+                });
+        } catch (error) {
+                console.error(error);
+                res.status(500).json({ status: 500, error: 'Server error' });
+        }
+};
+exports.deleteOfferAndProgramById = async (req, res) => {
+        try {
+                const deletedCity = await OfferAndProgram.findByIdAndDelete(req.params.id);
+
+                if (!deletedCity) {
+                        return res.status(404).json({ message: 'OfferAndProgram not found' });
+                }
+
+                res.status(200).json({
+                        status: 200,
+                        message: 'OfferAndProgram deleted successfully',
+                        data: deletedCity,
+                });
+        } catch (error) {
+                console.error(error);
+                res.status(500).json({ message: 'Server error' });
+        }
+};
+
+
 const reffralCode = async () => {
         var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ";
         let OTP = '';

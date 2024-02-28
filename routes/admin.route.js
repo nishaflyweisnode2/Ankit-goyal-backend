@@ -39,6 +39,18 @@ module.exports = (app) => {
         app.get('/api/v1/admin/call-us/:id', auth.getCallUsById);
         app.put('/api/v1/admin/call-us/:id', [authJwt.verifyToken], auth.updateCallUs);
         app.delete('/api/v1/admin/call-us/:id', [authJwt.verifyToken], auth.deleteCallUs);
-
+        app.post('/api/v1/fantacy-help/createFantacySelfHelp', [authJwt.verifyToken], auth.createFantacySelfHelp);
+        app.delete('/api/v1/fantacy-help/fantacy/:id', [authJwt.verifyToken], auth.deleteFantacySelfHelp);
+        app.get('/api/v1/fantacy-help/getFantacySelfHelp', auth.getFantacySelfHelp);
+        app.get('/api/v1/fantacy-help/fantacy/:id', auth.getFantacySelfHelpById);
+        app.post('/api/v1/responsible-game/createResponsibleGame', [authJwt.verifyToken], auth.createResponsibleGame);
+        app.delete('/api/v1/responsible-game/responsible/:id', [authJwt.verifyToken], auth.deleteResponsibleGame);
+        app.get('/api/v1/responsible-game/getResponsibleGame', auth.getResponsibleGame);
+        app.get('/api/v1/responsible-game/responsible/:id', auth.getResponsibleGameById);
+        app.post("/api/v1/admin/city/cities", [authJwt.isAdmin], cityImage.single('image'), auth.createCity);
+        app.get("/api/v1/admin/city/cities", [authJwt.isAdmin], auth.getAllCities);
+        app.get("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.getCityById);
+        app.put("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], cityImage.single('image'), auth.updateCityById);
+        app.delete("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.deleteCityById);
 
 }
