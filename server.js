@@ -30,4 +30,6 @@ mongoose.connect(process.env.MONGO_URI).then((data) => {
 app.listen(process.env.PORT, () => {
         console.log(`Listening on port ${process.env.PORT}!`);
 });
-module.exports = { handler: serverless(app) };
+
+module.exports = app;
+module.exports.handler = serverless(app)
