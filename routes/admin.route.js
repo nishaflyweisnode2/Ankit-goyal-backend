@@ -47,10 +47,10 @@ module.exports = (app) => {
         app.delete('/api/v1/responsible-game/responsible/:id', [authJwt.verifyToken], auth.deleteResponsibleGame);
         app.get('/api/v1/responsible-game/getResponsibleGame', auth.getResponsibleGame);
         app.get('/api/v1/responsible-game/responsible/:id', auth.getResponsibleGameById);
-        app.post("/api/v1/admin/city/cities", [authJwt.isAdmin], cityImage.single('image'), auth.createCity);
-        app.get("/api/v1/admin/city/cities", [authJwt.isAdmin], auth.getAllCities);
-        app.get("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.getCityById);
-        app.put("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], cityImage.single('image'), auth.updateCityById);
-        app.delete("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.deleteCityById);
+        // app.post("/api/v1/admin/city/cities", [authJwt.isAdmin], cityImage.single('image'), auth.createCity);
+        // app.get("/api/v1/admin/city/cities", [authJwt.isAdmin], auth.getAllCities);
+        // app.get("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.getCityById);
+        // app.put("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], cityImage.single('image'), auth.updateCityById);
+        // app.delete("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.deleteCityById);
 
 }
