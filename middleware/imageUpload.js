@@ -70,5 +70,13 @@ const storage15 = new CloudinaryStorage({
     }
 });
 const charges = multer({ storage: storage15 });
+const storage16 = new CloudinaryStorage({ cloudinary: cloudinary, params: { folder: "fantasyBackend/offerProgram", allowed_formats: ["jpg", "jpeg", "png", "PNG", "xlsx", "xls", "pdf", "PDF"], }, });
+const offerProgram = multer({ storage: storage16 });
+const storage17 = new CloudinaryStorage({ cloudinary: cloudinary, params: { folder: "fantasyBackend/matchImage", allowed_formats: ["jpg", "jpeg", "png", "PNG", "xlsx", "xls", "pdf", "PDF", "jiff", "JIFF", "jfif", "JFIF", "mp4", "MP4", "webm", "WEBM"], }, });
+const matchImage = multer({ storage: storage17 });
+var kpUpload = matchImage.fields([
+    { name: 'team1Image', maxCount: 1 },
+    { name: 'team2Image', maxCount: 1 },
+]);
 
-module.exports = { productUpload, bannerUpload, blogUpload, aboutusUpload, subCategoryUpload, categoryUpload, serviceUpload, E4UUpload, userProfileUpload, BrandUpload, offerUpload, spAgreementUpload, transportationCharges, complaintSuggestion, testimonial, charges };
+module.exports = { productUpload, bannerUpload, blogUpload, aboutusUpload, subCategoryUpload, categoryUpload, serviceUpload, E4UUpload, userProfileUpload, BrandUpload, offerUpload, spAgreementUpload, transportationCharges, complaintSuggestion, testimonial, charges, offerProgram, kpUpload };

@@ -1,5 +1,8 @@
 const auth = require("../controller/adminController");
 const authJwt = require("../middleware/authJwt");
+
+const { productUpload, bannerUpload, blogUpload, aboutusUpload, subCategoryUpload, categoryUpload, serviceUpload, userProfileUpload, testimonial, offerProgram, kpUpload } = require('../middleware/imageUpload')
+
 module.exports = (app) => {
         app.post("/api/v1/admin/registration", auth.registration);
         app.post("/api/v1/admin/signin", auth.signin);
@@ -47,10 +50,35 @@ module.exports = (app) => {
         app.delete('/api/v1/responsible-game/responsible/:id', [authJwt.verifyToken], auth.deleteResponsibleGame);
         app.get('/api/v1/responsible-game/getResponsibleGame', auth.getResponsibleGame);
         app.get('/api/v1/responsible-game/responsible/:id', auth.getResponsibleGameById);
-        // app.post("/api/v1/admin/city/cities", [authJwt.isAdmin], cityImage.single('image'), auth.createCity);
-        // app.get("/api/v1/admin/city/cities", [authJwt.isAdmin], auth.getAllCities);
-        // app.get("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.getCityById);
-        // app.put("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], cityImage.single('image'), auth.updateCityById);
-        // app.delete("/api/v1/admin/city/cities/:id", [authJwt.isAdmin], auth.deleteCityById);
+        app.post("/api/v1/offer/program", [authJwt.verifyToken], offerProgram.single('image'), auth.createOfferAndProgram);
+        app.get("/api/v1/offer/program", auth.getAllOfferAndProgram);
+        app.get("/api/v1/offer/program/:id", auth.getOfferAndProgramById);
+        app.put("/api/v1/offer/program/:id", [authJwt.verifyToken], offerProgram.single('image'), auth.updateOfferAndProgramById);
+        app.delete("/api/v1/offer/program/:id", [authJwt.verifyToken], auth.deleteOfferAndProgramById);
+        app.post('/api/v1/matches', [authJwt.verifyToken], kpUpload, auth.createMatch);
+        app.get('/api/v1/matches', [authJwt.verifyToken], auth.getAllMatches);
+        app.get('/api/v1/matches/:id', [authJwt.verifyToken], auth.getMatchById);
+        app.put('/api/v1/matches/:id', [authJwt.verifyToken], kpUpload, auth.updateMatchById);
+        app.delete('/api/v1/matches/:id', [authJwt.verifyToken], auth.deleteMatchById);
+        app.put('/api/v1/matches/:id/status', [authJwt.verifyToken], auth.updateMatchStatusById);
+        app.post('/api/v1/contests', [authJwt.verifyToken], auth.createContest);
+        app.get('/api/v1/contests', [authJwt.verifyToken], auth.getAllContests);
+        app.get('/api/v1/contests/:id', [authJwt.verifyToken], auth.getContestById);
+        app.put('/api/v1/contests/:id', [authJwt.verifyToken], auth.updateContestById);
+        app.delete('/api/v1/contests/:id', [authJwt.verifyToken], auth.deleteContestById);
+        app.put('/api/v1/contests/:id/update-status', [authJwt.verifyToken], auth.updateContestStatusById);
+        app.get('/api/v1/contests/by-match/:matchId', [authJwt.verifyToken], auth.getContestsByMatchId);
+        app.post('/api/v1/players', [authJwt.verifyToken], auth.createPlayer);
+        app.put('/api/v1/players/:id', [authJwt.verifyToken], auth.updatePlayerById);
+        app.get('/api/v1/players', [authJwt.verifyToken], auth.getAllPlayer);
+        app.get('/api/v1/players/:id', [authJwt.verifyToken], auth.getPlayerById);
+        app.delete('/api/v1/players/:id', [authJwt.verifyToken], auth.deletePlayerById);
+        app.post('/api/v1/teams', [authJwt.verifyToken], auth.createTeam);
+        app.get('/api/v1/teams', [authJwt.verifyToken], auth.getAllTeams);
+        app.get('/api/v1/teams/:id', [authJwt.verifyToken], auth.getTeamById);
+        app.put('/api/v1/teams/:id', [authJwt.verifyToken], auth.updateTeamById);
+        app.delete('/api/v1/teams/:id', [authJwt.verifyToken], auth.deleteTeamById);
+
+
 
 }

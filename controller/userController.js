@@ -5,6 +5,12 @@ const authConfig = require("../configs/auth.config");
 const User = require("../model/userModel");
 const notification = require("../model/notification");
 const transaction = require('../model/transactionModel');
+const Match = require('../model/matchModel');
+const Contest = require('../model/contestModel');
+
+
+
+
 exports.registration = async (req, res) => {
         try {
                 const user = await User.findOne({ _id: req.user._id });
@@ -70,6 +76,28 @@ exports.loginWithPhone = async (req, res) => {
         } catch (error) {
                 console.error(error);
                 return res.status(500).json({ message: "Server error" });
+        }
+};
+exports.resendOTP = async (req, res) => {
+        const { id } = req.params;
+        try {
+                const user = await User.findOne({ _id: id, userType: "User" });
+                if (!user) {
+                        return res.status(404).send({ status: 404, message: "User not found" });
+                }
+                const otp = newOTP.generate(4, { alphabets: false, upperCase: false, specialChar: false, });
+                const otpExpiration = new Date(Date.now() + 60 * 1000);
+                const accountVerification = false;
+                const updated = await User.findOneAndUpdate({ _id: user._id }, { otp, otpExpiration, accountVerification }, { new: true });
+                let obj = {
+                        id: updated._id,
+                        otp: updated.otp,
+                        phone: updated.phone
+                }
+                return res.status(200).send({ status: 200, message: "OTP resent", data: obj });
+        } catch (error) {
+                console.error(error);
+                return res.status(500).send({ status: 500, message: "Server error" + error.message });
         }
 };
 exports.verifyOtp = async (req, res) => {
@@ -439,6 +467,115 @@ exports.allDebitTransactionUser = async (req, res) => {
                 return res.status(400).json({ message: err.message });
         }
 };
+exports.joinContest = async (req, res) => {
+        try {
+                const userId = req.user._id
+                const { contestId } = req.body;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const contest = await Contest.findById(contestId);
+                if (!contest) {
+                        return res.status(404).json({ status: 404, message: 'Contest not found' });
+                }
+
+                if (contest.participants.length >= contest.maxParticipants) {
+                        return res.status(400).json({ status: 400, message: 'Contest is already full' });
+                }
+
+                if (contest.participants.includes(userId)) {
+                        return res.status(400).json({ status: 400, message: 'User is already part of the contest' });
+                }
+
+                contest.participants.push(userId);
+                await contest.save();
+
+                return res.status(200).json({ status: 200, message: 'User joined the contest successfully', data: contest });
+        } catch (error) {
+                console.error('Error joining contest:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.joinContestByCode = async (req, res) => {
+        try {
+                const userId = req.user._id
+                const { code } = req.body;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const contest = await Contest.findOne({ code });
+
+                if (!contest) {
+                        return res.status(404).json({ status: 404, message: 'Contest not found for the provided code' });
+                }
+
+                if (contest.participants.length >= contest.maxParticipants) {
+                        return res.status(400).json({ status: 400, message: 'Contest is already full' });
+                }
+
+                if (contest.participants.includes(userId)) {
+                        return res.status(400).json({ status: 400, message: 'User is already part of the contest' });
+                }
+
+                contest.participants.push(userId);
+                await contest.save();
+
+                return res.status(200).json({ status: 200, message: 'Successfully joined the contest via code', data: contest });
+        } catch (error) {
+                console.error('Error joining contest via code:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getUpcomingContests = async (req, res) => {
+        try {
+                const userId = req.user._id
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+                const upcomingContests = await Contest.find({
+                        participants: userId,
+                        status: 'active',
+                        startTime: { $gte: new Date() }
+                });
+
+                return res.status(200).json({ status: 200, message: 'Upcoming contests retrieved successfully', data: upcomingContests });
+        } catch (error) {
+                console.error('Error fetching upcoming contests:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getUpcomingContestById = async (req, res) => {
+        try {
+                const contestId = req.params.id;
+
+                const contest = await Contest.findOne({
+                        _id: contestId,
+                        status: 'active',
+                        startTime: { $gte: new Date() }
+                });
+
+                if (!contest) {
+                        return res.status(404).json({ status: 404, message: 'Contest not found or not upcoming' });
+                }
+
+                return res.status(200).json({ status: 200, message: 'Upcoming contest retrieved successfully', data: contest });
+        } catch (error) {
+                console.error('Error fetching upcoming contest by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+
+
+
+
+
 const reffralCode = async () => {
         var digits = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         let OTP = '';

@@ -6,6 +6,7 @@ const router = express()
 module.exports = (app) => {
         app.post("/api/v1/user/social/Login", auth.socialLogin);
         app.post("/api/v1/user/loginWithPhone", auth.loginWithPhone);
+        app.post("/api/v1/user/resendOtp/:id", auth.resendOTP);
         app.post("/api/v1/user/:id", auth.verifyOtp);
         app.post("/api/v1/user/comp/registration", [authJwt.verifyToken], auth.registration);
         app.get("/api/v1/user/getProfile", [authJwt.verifyToken], auth.getProfile);
@@ -18,4 +19,10 @@ module.exports = (app) => {
         app.get("/api/v1/allTransactionUser", [authJwt.verifyToken], auth.allTransactionUser);
         app.get("/api/v1/allcreditTransactionUser", [authJwt.verifyToken], auth.allcreditTransactionUser);
         app.get("/api/v1/allDebitTransactionUser", [authJwt.verifyToken], auth.allDebitTransactionUser);
+        app.post("/api/v1/contest/join", [authJwt.verifyToken], auth.joinContest);
+        app.post('/api/v1/contest/join/code', [authJwt.verifyToken], auth.joinContestByCode);
+        app.get('/api/v1/upcoming-contests', [authJwt.verifyToken], auth.getUpcomingContests);
+        app.get('/api/v1/upcoming-contests/:id', [authJwt.verifyToken], auth.getUpcomingContestById);
+
+
 }
