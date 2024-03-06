@@ -1148,15 +1148,27 @@ exports.deletePlayerById = async (req, res) => {
 };
 exports.createTeam = async (req, res) => {
         try {
-                const { name, contest, match, players, captain, viceCaptain } = req.body;
+                const userId = req.user._id
+                const { name, contest, players, captain, viceCaptain } = req.body;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const checkContest = await Contest.findById(contest);
+                if (!checkContest) {
+                        return res.status(404).json({ status: 404, message: 'Contest not found' });
+                }
 
                 const team = new Team({
                         name,
                         contest,
-                        match,
+                        match: checkContest.match,
                         players,
                         captain,
                         viceCaptain,
+                        createdBy: user._id
                 });
 
                 await team.save();
@@ -1212,6 +1224,105 @@ exports.deleteTeamById = async (req, res) => {
                 return res.status(200).json({ status: 200, message: 'Team deleted successfully', data: deletedTeam });
         } catch (error) {
                 console.error('Error deleting team by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.findTeamsByContestId = async (req, res) => {
+        try {
+                const userId = req.user._id
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const contestId = req.params.contestId;
+                const teams = await Team.find({ contest: contestId, createdBy: userId })
+                        .populate('contest')
+                        .populate('match')
+                        .populate('players')
+                        .populate('captain')
+                        .populate('viceCaptain')
+                        .populate('createdBy');
+                if (!teams || teams.length === 0) {
+                        return res.status(404).json({ status: 404, message: 'No teams found for the provided contest ID' });
+                }
+                return res.status(200).json({ status: 200, message: 'Teams found successfully', data: teams });
+        } catch (error) {
+                console.error('Error finding teams by contest ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.findTeamsByMatchId = async (req, res) => {
+        try {
+                const userId = req.user._id
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const matchId = req.params.matchId;
+                const teams = await Team.find({ match: matchId, createdBy: userId })
+                        .populate('contest')
+                        .populate('match')
+                        .populate('players')
+                        .populate('captain')
+                        .populate('viceCaptain')
+                        .populate('createdBy');
+                if (!teams || teams.length === 0) {
+                        return res.status(404).json({ status: 404, message: 'No teams found for the provided match ID' });
+                }
+                return res.status(200).json({ status: 200, message: 'Teams found successfully', data: teams });
+        } catch (error) {
+                console.error('Error finding teams by match ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.addPlayerToTeam = async (req, res) => {
+        try {
+                const { teamId, playerId } = req.body;
+
+                const team = await Team.findById(teamId);
+                if (!team) {
+                        return res.status(404).json({ status: 404, message: 'Team not found' });
+                }
+
+                if (team.players.includes(playerId)) {
+                        return res.status(400).json({ status: 400, message: 'Player is already in the team' });
+                }
+
+                team.players.push(playerId);
+
+                await team.save();
+
+                return res.status(200).json({ status: 200, message: 'Player added to the team successfully', data: team });
+        } catch (error) {
+                console.error('Error adding player to team:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.removePlayerFromTeam = async (req, res) => {
+        try {
+                const { teamId, playerId } = req.body;
+
+                const team = await Team.findById(teamId);
+                if (!team) {
+                        return res.status(404).json({ status: 404, message: 'Team not found' });
+                }
+
+                const playerIndex = team.players.indexOf(playerId);
+                if (playerIndex === -1) {
+                        return res.status(404).json({ status: 404, message: 'Player not found in the team' });
+                }
+
+                team.players.splice(playerIndex, 1);
+
+                await team.save();
+
+                return res.status(200).json({ status: 200, message: 'Player removed from the team successfully', data: team });
+        } catch (error) {
+                console.error('Error removing player from team:', error);
                 return res.status(500).json({ status: 500, error: 'Internal server error' });
         }
 };

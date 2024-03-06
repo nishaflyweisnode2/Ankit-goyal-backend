@@ -3,10 +3,11 @@ const jwt = require("jsonwebtoken");
 var newOTP = require("otp-generators");
 const authConfig = require("../configs/auth.config");
 const User = require("../model/userModel");
-const notification = require("../model/notification");
+const Notification = require("../model/notification");
 const transaction = require('../model/transactionModel');
 const Match = require('../model/matchModel');
 const Contest = require('../model/contestModel');
+const Team = require('../model/teamModel');
 
 
 
@@ -236,7 +237,7 @@ exports.sendNotification = async (req, res) => {
                                                                 image: req.body.image,
                                                                 time: req.body.time,
                                                         }
-                                                        await notification.create(obj)
+                                                        await Notification.create(obj)
                                                         let obj1 = {
                                                                 userId: admin._id,
                                                                 title: req.body.title,
@@ -245,7 +246,7 @@ exports.sendNotification = async (req, res) => {
                                                                 image: req.body.image,
                                                                 time: req.body.time,
                                                         }
-                                                        await notification.create(obj1)
+                                                        await Notification.create(obj1)
                                                         return res.status(200).json({ status: 200, message: "Notification send successfully." });
                                                 } else {
                                                         let obj = {
@@ -256,7 +257,7 @@ exports.sendNotification = async (req, res) => {
                                                                 image: req.body.image,
                                                                 time: req.body.time,
                                                         }
-                                                        await notification.create(obj)
+                                                        await Notification.create(obj)
                                                         let obj1 = {
                                                                 userId: admin._id,
                                                                 title: req.body.title,
@@ -265,7 +266,7 @@ exports.sendNotification = async (req, res) => {
                                                                 image: req.body.image,
                                                                 time: req.body.time,
                                                         }
-                                                        await notification.create(obj1)
+                                                        await Notification.create(obj1)
                                                         return res.status(200).json({ status: 200, message: "Notification send successfully." });
                                                 }
                                         }
@@ -286,7 +287,7 @@ exports.sendNotification = async (req, res) => {
                                                         image: req.body.image,
                                                         time: req.body.time,
                                                 }
-                                                let data = await notification.create(obj)
+                                                let data = await Notification.create(obj)
                                                 if (data) {
                                                         let obj1 = {
                                                                 userId: admin._id,
@@ -296,7 +297,7 @@ exports.sendNotification = async (req, res) => {
                                                                 image: req.body.image,
                                                                 time: req.body.time,
                                                         }
-                                                        await notification.create(obj1)
+                                                        await Notification.create(obj1)
                                                         return res.status(200).json({ status: 200, message: "Notification send successfully.", data: data });
                                                 }
                                         } else {
@@ -308,7 +309,7 @@ exports.sendNotification = async (req, res) => {
                                                         image: req.body.image,
                                                         time: req.body.time,
                                                 }
-                                                let data = await notification.create(obj)
+                                                let data = await Notification.create(obj)
                                                 if (data) {
                                                         let obj1 = {
                                                                 userId: admin._id,
@@ -318,7 +319,7 @@ exports.sendNotification = async (req, res) => {
                                                                 image: req.body.image,
                                                                 time: req.body.time,
                                                         }
-                                                        await notification.create(obj1)
+                                                        await Notification.create(obj1)
                                                         return res.status(200).json({ status: 200, message: "Notification send successfully.", data: data });
                                                 }
                                         }
@@ -336,7 +337,7 @@ exports.allNotification = async (req, res) => {
                 if (!admin) {
                         return res.status(404).json({ status: 404, message: "User not found" });
                 } else {
-                        let findNotification = await notification.find({ userId: admin._id }).populate('userId');
+                        let findNotification = await Notification.find({ userId: admin._id }).populate('userId');
                         if (findNotification.length == 0) {
                                 return res.status(404).json({ status: 404, message: "Notification data not found successfully.", data: {} })
                         } else {
@@ -364,7 +365,7 @@ exports.addMoney = async (req, res) => {
                         };
                         const createdTransaction = await transaction.create(transactionData);
                         const welcomeMessage = `Welcome, ${updatedUser.fullName}! Thank you for adding money to your wallet.`;
-                        const welcomeNotification = new notification({
+                        const welcomeNotification = new Notification({
                                 recipient: updatedUser._id,
                                 content: welcomeMessage,
                                 type: 'welcome',
@@ -541,7 +542,7 @@ exports.getUpcomingContests = async (req, res) => {
                 }
                 const upcomingContests = await Contest.find({
                         participants: userId,
-                        status: 'active',
+                        status: 'pending',
                         startTime: { $gte: new Date() }
                 });
 
@@ -557,7 +558,7 @@ exports.getUpcomingContestById = async (req, res) => {
 
                 const contest = await Contest.findOne({
                         _id: contestId,
-                        status: 'active',
+                        status: 'pending',
                         startTime: { $gte: new Date() }
                 });
 
@@ -568,6 +569,284 @@ exports.getUpcomingContestById = async (req, res) => {
                 return res.status(200).json({ status: 200, message: 'Upcoming contest retrieved successfully', data: contest });
         } catch (error) {
                 console.error('Error fetching upcoming contest by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getLiveContests = async (req, res) => {
+        try {
+                const userId = req.user._id
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+                const upcomingContests = await Contest.find({
+                        participants: userId,
+                        status: 'active',
+                        // startTime: { $gte: new Date() }
+                });
+
+                return res.status(200).json({ status: 200, message: 'Upcoming contests retrieved successfully', data: upcomingContests });
+        } catch (error) {
+                console.error('Error fetching upcoming contests:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getLiveContestsById = async (req, res) => {
+        try {
+                const contestId = req.params.id;
+
+                const contest = await Contest.findOne({
+                        _id: contestId,
+                        status: 'active',
+                        // startTime: { $gte: new Date() }
+                });
+
+                if (!contest) {
+                        return res.status(404).json({ status: 404, message: 'Contest not found or not live' });
+                }
+
+                return res.status(200).json({ status: 200, message: 'live contest retrieved successfully', data: contest });
+        } catch (error) {
+                console.error('Error fetching live contest by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getCompltedContests = async (req, res) => {
+        try {
+                const userId = req.user._id
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+                const upcomingContests = await Contest.find({
+                        participants: userId,
+                        status: 'completed',
+                });
+
+                return res.status(200).json({ status: 200, message: 'Upcoming contests retrieved successfully', data: upcomingContests });
+        } catch (error) {
+                console.error('Error fetching upcoming contests:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getCompltedContestsById = async (req, res) => {
+        try {
+                const contestId = req.params.id;
+
+                const contest = await Contest.findOne({
+                        _id: contestId,
+                        status: 'completed',
+                        // startTime: { $gte: new Date() }
+                });
+
+                if (!contest) {
+                        return res.status(404).json({ status: 404, message: 'Contest not found or not completed' });
+                }
+
+                return res.status(200).json({ status: 200, message: 'completed contest retrieved successfully', data: contest });
+        } catch (error) {
+                console.error('Error fetching completed contest by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.createTeam = async (req, res) => {
+        try {
+                const userId = req.user._id
+                const { name, contest, players, captain, viceCaptain } = req.body;
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const checkContest = await Contest.findById(contest);
+                if (!checkContest) {
+                        return res.status(404).json({ status: 404, message: 'Contest not found' });
+                }
+
+                const team = new Team({
+                        name,
+                        contest,
+                        match: checkContest.match,
+                        players,
+                        captain,
+                        viceCaptain,
+                        createdBy: user._id
+                });
+
+                await team.save();
+
+                const match = await Match.findById(checkContest.match);
+                if (!match) {
+                        return res.status(404).json({ status: 404, message: 'Match not found' });
+                }
+
+                const notification = new Notification({
+                        userId: user._id,
+                        title: 'Team Created',
+                        body: `Your team "${name}" has been created successfully for the match "${match.team1}" Vs "${match.team2}".`,
+                });
+
+                await notification.save();
+
+                return res.status(201).json({ status: 201, message: 'Team created successfully', data: team });
+        } catch (error) {
+                console.error('Error creating team:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getAllTeams = async (req, res) => {
+        try {
+                const userId = req.user._id
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const teams = await Team.find({ createdBy: userId });
+                return res.status(200).json({ status: 200, message: 'Teams retrieved successfully', data: teams });
+        } catch (error) {
+                console.error('Error getting teams:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.getTeamById = async (req, res) => {
+        try {
+                const teamId = req.params.id;
+                const team = await Team.findById(teamId);
+                if (!team) {
+                        return res.status(404).json({ status: 404, message: 'Team not found' });
+                }
+                return res.status(200).json({ status: 200, message: 'Team retrieved successfully', data: team });
+        } catch (error) {
+                console.error('Error getting team by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.updateTeamById = async (req, res) => {
+        try {
+                const teamId = req.params.id;
+                const updates = req.body;
+                const updatedTeam = await Team.findByIdAndUpdate(teamId, updates, { new: true });
+                if (!updatedTeam) {
+                        return res.status(404).json({ status: 404, message: 'Team not found' });
+                }
+                return res.status(200).json({ status: 200, message: 'Team updated successfully', data: updatedTeam });
+        } catch (error) {
+                console.error('Error updating team by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.deleteTeamById = async (req, res) => {
+        try {
+                const teamId = req.params.id;
+                const deletedTeam = await Team.findByIdAndDelete(teamId);
+                if (!deletedTeam) {
+                        return res.status(404).json({ status: 404, message: 'Team not found' });
+                }
+                return res.status(200).json({ status: 200, message: 'Team deleted successfully', data: deletedTeam });
+        } catch (error) {
+                console.error('Error deleting team by ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.findTeamsByContestId = async (req, res) => {
+        try {
+                const userId = req.user._id
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const contestId = req.params.contestId;
+                const teams = await Team.find({ contest: contestId, createdBy: userId })
+                        .populate('contest')
+                        .populate('match')
+                        .populate('players')
+                        .populate('captain')
+                        .populate('viceCaptain')
+                        .populate('createdBy');
+                if (!teams || teams.length === 0) {
+                        return res.status(404).json({ status: 404, message: 'No teams found for the provided contest ID' });
+                }
+                return res.status(200).json({ status: 200, message: 'Teams found successfully', data: teams });
+        } catch (error) {
+                console.error('Error finding teams by contest ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.findTeamsByMatchId = async (req, res) => {
+        try {
+                const userId = req.user._id
+
+                const user = await User.findById(userId);
+                if (!user) {
+                        return res.status(404).json({ status: 404, message: 'User not found' });
+                }
+
+                const matchId = req.params.matchId;
+                const teams = await Team.find({ match: matchId, createdBy: userId })
+                        .populate('contest')
+                        .populate('match')
+                        .populate('players')
+                        .populate('captain')
+                        .populate('viceCaptain')
+                        .populate('createdBy');
+                if (!teams || teams.length === 0) {
+                        return res.status(404).json({ status: 404, message: 'No teams found for the provided match ID' });
+                }
+                return res.status(200).json({ status: 200, message: 'Teams found successfully', data: teams });
+        } catch (error) {
+                console.error('Error finding teams by match ID:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.addPlayerToTeam = async (req, res) => {
+        try {
+                const { teamId, playerId } = req.body;
+
+                const team = await Team.findById(teamId);
+                if (!team) {
+                        return res.status(404).json({ status: 404, message: 'Team not found' });
+                }
+
+                if (team.players.includes(playerId)) {
+                        return res.status(400).json({ status: 400, message: 'Player is already in the team' });
+                }
+
+                team.players.push(playerId);
+
+                await team.save();
+
+                return res.status(200).json({ status: 200, message: 'Player added to the team successfully', data: team });
+        } catch (error) {
+                console.error('Error adding player to team:', error);
+                return res.status(500).json({ status: 500, error: 'Internal server error' });
+        }
+};
+exports.removePlayerFromTeam = async (req, res) => {
+        try {
+                const { teamId, playerId } = req.body;
+
+                const team = await Team.findById(teamId);
+                if (!team) {
+                        return res.status(404).json({ status: 404, message: 'Team not found' });
+                }
+
+                const playerIndex = team.players.indexOf(playerId);
+                if (playerIndex === -1) {
+                        return res.status(404).json({ status: 404, message: 'Player not found in the team' });
+                }
+
+                team.players.splice(playerIndex, 1);
+
+                await team.save();
+
+                return res.status(200).json({ status: 200, message: 'Player removed from the team successfully', data: team });
+        } catch (error) {
+                console.error('Error removing player from team:', error);
                 return res.status(500).json({ status: 500, error: 'Internal server error' });
         }
 };

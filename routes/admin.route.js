@@ -78,6 +78,10 @@ module.exports = (app) => {
         app.get('/api/v1/teams/:id', [authJwt.verifyToken], auth.getTeamById);
         app.put('/api/v1/teams/:id', [authJwt.verifyToken], auth.updateTeamById);
         app.delete('/api/v1/teams/:id', [authJwt.verifyToken], auth.deleteTeamById);
+        app.get('/api/v1/teams/match/:matchId', [authJwt.verifyToken], auth.findTeamsByMatchId);
+        app.get('/api/v1/teams/contest/:contestId', [authJwt.verifyToken], auth.findTeamsByContestId);
+        app.post('/api/v1/team/add-player', [authJwt.verifyToken], auth.addPlayerToTeam);
+        app.post('/api/v1/team/remove-player', [authJwt.verifyToken], auth.removePlayerFromTeam);
 
 
 

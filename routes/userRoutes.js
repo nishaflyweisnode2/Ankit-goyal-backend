@@ -23,6 +23,20 @@ module.exports = (app) => {
         app.post('/api/v1/contest/join/code', [authJwt.verifyToken], auth.joinContestByCode);
         app.get('/api/v1/upcoming-contests', [authJwt.verifyToken], auth.getUpcomingContests);
         app.get('/api/v1/upcoming-contests/:id', [authJwt.verifyToken], auth.getUpcomingContestById);
+        app.get('/api/v1/live-contest', [authJwt.verifyToken], auth.getLiveContests);
+        app.get('/api/v1/live-contest/:id', [authJwt.verifyToken], auth.getLiveContestsById);
+        app.get('/api/v1/completed-contest', [authJwt.verifyToken], auth.getCompltedContests);
+        app.get('/api/v1/completed-contest/:id', [authJwt.verifyToken], auth.getCompltedContestsById);
+        app.post('/api/v1/teams', [authJwt.verifyToken], auth.createTeam);
+        app.get('/api/v1/teams', [authJwt.verifyToken], auth.getAllTeams);
+        app.get('/api/v1/teams/:id', [authJwt.verifyToken], auth.getTeamById);
+        app.put('/api/v1/teams/:id', [authJwt.verifyToken], auth.updateTeamById);
+        app.delete('/api/v1/teams/:id', [authJwt.verifyToken], auth.deleteTeamById);
+        app.get('/api/v1/teams/match/:matchId', [authJwt.verifyToken], auth.findTeamsByMatchId);
+        app.get('/api/v1/teams/contest/:contestId', [authJwt.verifyToken], auth.findTeamsByContestId);
+        app.post('/api/v1/team/add-player', [authJwt.verifyToken], auth.addPlayerToTeam);
+        app.post('/api/v1/team/remove-player', [authJwt.verifyToken], auth.removePlayerFromTeam);
+
 
 
 }
